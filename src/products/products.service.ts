@@ -49,7 +49,34 @@ export class ProductsService {
 
     const skip = (Number(page) - 1) * Number(limit);
 
-    const products = await this.productModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).exec();
+    // Prioritize meat, poultry, fish, and seafood products before spices and seasonings
+    const spiceRegex = /spice|curry|thyme|seasoning|cube|maggi|sauce|ketchup|oil|leaves|powder|beans|sweetcorn|peas|milk/i;
+
+    const pipeline: any[] = [
+      { $match: filter },
+      {
+        $addFields: {
+          isSpice: {
+            $cond: [
+              {
+                $or: [
+                  { $regexMatch: { input: '$category', regex: /spices|spice|seasoning/i } },
+                  { $regexMatch: { input: '$name', regex: spiceRegex } }
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        }
+      },
+      { $sort: { isSpice: 1, createdAt: -1, _id: 1 } },
+      { $skip: skip },
+      { $limit: Number(limit) },
+      { $project: { isSpice: 0 } }
+    ];
+
+    const products = await this.productModel.aggregate(pipeline).exec();
     const total = await this.productModel.countDocuments(filter);
 
     return {
