@@ -667,6 +667,14 @@ export class AdminService {
       const parsedData = { ...data };
       if (parsedData.deliveryFee !== undefined) parsedData.deliveryFee = Number(parsedData.deliveryFee) || 0;
       if (parsedData.serviceFee !== undefined) parsedData.serviceFee = Number(parsedData.serviceFee) || 0;
+      if (parsedData.discountCodes !== undefined && Array.isArray(parsedData.discountCodes)) {
+        parsedData.discountCodes = parsedData.discountCodes.map((d: any) => ({
+          code: String(d.code || '').trim().toUpperCase(),
+          percent: Number(d.percent) || 0,
+          active: Boolean(d.active),
+          description: String(d.description || '').trim()
+        })).filter((d: any) => d.code.length > 0 && d.percent > 0);
+      }
       settings.general = { ...settings.general, ...parsedData };
     } else if (section === 'security') {
       settings.security = { ...settings.security, ...data };

@@ -34,6 +34,12 @@ class BusinessInfo {
 
   @Prop({ default: 'Mon - Sat: 8:00 AM - 7:00 PM' })
   pickupHours: string;
+
+  @Prop({ type: [{ code: String, percent: Number, active: Boolean, description: String }], default: [
+    { code: 'CARNEIZ10', percent: 10, active: true, description: 'Newsletter Welcome 10% Discount' },
+    { code: 'CARNEIZ5', percent: 5, active: true, description: 'General Store 5% Discount' }
+  ] })
+  discountCodes: Array<{ code: string; percent: number; active: boolean; description?: string }>;
 }
 
 @Schema({ _id: false })

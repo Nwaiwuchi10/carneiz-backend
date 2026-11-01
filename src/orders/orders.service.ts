@@ -44,6 +44,31 @@ export class OrdersService {
       businessName: general.businessName || 'Carneiz Premium Meats',
       businessAddress: general.businessAddress || 'Victoria Island, Lagos, Nigeria',
       currency: general.currency || 'NGN (₦)',
+      discountCodes: general.discountCodes || [
+        { code: 'CARNEIZ10', percent: 10, active: true, description: 'Newsletter Welcome 10% Discount' },
+        { code: 'CARNEIZ5', percent: 5, active: true, description: 'General Store 5% Discount' }
+      ],
+    };
+  }
+
+  async validatePromoCode(rawCode: string) {
+    if (!rawCode || typeof rawCode !== 'string') {
+      throw new BadRequestException('Please provide a valid promo code.');
+    }
+    const cleanCode = rawCode.trim().toUpperCase();
+    const config = await this.getStoreConfig();
+    const discounts: Array<{ code: string; percent: number; active: boolean; description?: string }> = config.discountCodes || [];
+
+    const matched = discounts.find(d => d.code.toUpperCase() === cleanCode && d.active !== false);
+    if (!matched) {
+      throw new BadRequestException(`Promo code "${cleanCode}" is invalid or expired.`);
+    }
+
+    return {
+      valid: true,
+      code: matched.code,
+      percent: Number(matched.percent) || 5,
+      description: matched.description || `${matched.percent}% Discount Applied`,
     };
   }
 
@@ -138,8 +163,20 @@ export class OrdersService {
         ? 0 
         : (orderData.deliveryFee !== undefined ? Number(orderData.deliveryFee) : config.deliveryFee);
       const serviceFee = orderData.serviceFee !== undefined ? Number(orderData.serviceFee) : config.serviceFee;
-      const discount = Number(orderData.discount) || 0;
-      const total = Number(orderData.total) || (subtotal + deliveryFee + serviceFee - discount);
+      
+      // Server-side discount validation to prevent unauthorized or arbitrary discount amounts
+      let validDiscountAmount = 0;
+      if (orderData.discountCode) {
+        const cleanCode = String(orderData.discountCode).trim().toUpperCase();
+        const matched = (config.discountCodes || []).find(
+          (d: any) => d.code.toUpperCase() === cleanCode && d.active !== false
+        );
+        if (matched) {
+          validDiscountAmount = Math.round((subtotal * Number(matched.percent)) / 100);
+        }
+      }
+      const discount = validDiscountAmount;
+      const total = Math.max(0, subtotal + deliveryFee + serviceFee - discount);
       
       const pickupAddress = orderData.pickupAddress || config.pickupAddress;
       const deliveryWindow = orderData.deliveryWindow || (fulfillmentType === 'pickup' ? 'Same-Day In-Store Pickup (8AM - 7PM)' : 'Standard 2-3 Days Cold-Chain Delivery');

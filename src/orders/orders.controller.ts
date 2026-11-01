@@ -23,6 +23,11 @@ export class OrdersController {
     return this.ordersService.getStoreConfig();
   }
 
+  @Post('validate-promo')
+  async validatePromo(@Body('code') code: string) {
+    return this.ordersService.validatePromoCode(code);
+  }
+
   @Get()
   async findAll(@Query() query: any) {
     return this.ordersService.findAll(query);
