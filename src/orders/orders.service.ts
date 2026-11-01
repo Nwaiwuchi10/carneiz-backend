@@ -134,7 +134,7 @@ export class OrdersService {
             </div>
           </div>
           
-          <a href="http://localhost:3000/track-order?orderId=${encodeURIComponent(orderRef)}" style="display: block; width: 100%; text-align: center; background: #7A1A1A; color: white; padding: 15px 0; text-decoration: none; border-radius: 8px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+          <a href="${process.env.FRONTEND_URL || 'https://carneiz-eta.vercel.app'}/track-order?orderId=${encodeURIComponent(orderRef)}" style="display: block; width: 100%; text-align: center; background: #7A1A1A; color: white; padding: 15px 0; text-decoration: none; border-radius: 8px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
             TRACK ORDER DETAILS & VERIFY PIN
           </a>
           <p style="text-align: center; color: #777; font-size: 12px;">If you have any questions, reply directly to this email or visit our store.</p>
@@ -288,7 +288,9 @@ export class OrdersService {
 
       // Generate Flutterwave Payment Link
       const cleanOrderRef = orderRef.replace(/#/g, '');
-      const redirectUrl = orderData.redirect_url || `http://localhost:3000/checkout?status=success&orderId=${cleanOrderRef}`;
+      const defaultFrontendUrl = process.env.FRONTEND_URL || 'https://carneiz-eta.vercel.app';
+      const defaultCallbackUrl = process.env.FLW_REDIRECT_URL || `${defaultFrontendUrl}/checkout`;
+      const redirectUrl = orderData.redirect_url || `${defaultCallbackUrl}?status=success&orderId=${cleanOrderRef}`;
 
       const payload = {
         tx_ref,
