@@ -46,7 +46,7 @@ export class Order {
   @Prop({ default: () => Math.floor(1000 + Math.random() * 9000).toString() })
   deliveryPin: string; // Secret 4-digit PIN given to customer to confirm delivery
 
-  @Prop({ default: 'Thursday, May 14 (Standard Delivery)' })
+  @Prop({ default: 'Standard Cold-Chain Delivery (2-3 Business Days)' })
   deliveryWindow: string;
 
   @Prop({ default: 'Flutterwave' })
