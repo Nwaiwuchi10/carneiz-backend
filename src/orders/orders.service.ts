@@ -289,8 +289,8 @@ export class OrdersService {
       // Generate Flutterwave Payment Link
       const cleanOrderRef = orderRef.replace(/#/g, '');
       const defaultFrontendUrl = process.env.FRONTEND_URL || 'https://carneiz-eta.vercel.app';
-      const defaultCallbackUrl = process.env.FLW_REDIRECT_URL || `${defaultFrontendUrl}/checkout`;
-      const redirectUrl = orderData.redirect_url || `${defaultCallbackUrl}?status=success&orderId=${cleanOrderRef}`;
+      const baseCallbackUrl = (process.env.FLW_REDIRECT_URL || `${defaultFrontendUrl}/checkout`).split('?')[0];
+      const redirectUrl = `${baseCallbackUrl}?status=success&orderId=${cleanOrderRef}`;
 
       const payload = {
         tx_ref,
